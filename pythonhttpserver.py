@@ -3,7 +3,7 @@
 
 from http.server import BaseHTTPRequestHandler
 
-import argparse, os, ssl, sys
+import argparse, os, random, ssl, sys, time
 
 HOST_NAME = 'localhost'
 PORT_NUMBER = 8080
@@ -45,7 +45,15 @@ class Server(BaseHTTPRequestHandler):
         return content
 
     def respond(self):
-        content = self.handle_http(status=CONFIG['code'])
+        status = CONFIG['responsecode']
+        if CONFIG['success'] < 100:
+            if CONFIG['success'] < random.uniform(1, 100):
+                status = random.choice([400, 404, 418, 501])
+        content = self.handle_http(status=status)
+        if CONFIG['delay'] != 0:
+            delay = random.uniform(0, CONFIG['delay'])
+            print('Delaying %d ms' % delay)
+            time.sleep(delay * 0.001)
         self.wfile.write(content)
 
 
@@ -61,12 +69,27 @@ def main(args):
 
     if CONFIG.get('tls') is not None:
         httpd.socket = ssl.wrap_socket(
-            httpd.socket, keyfile=CONFIG['key'], certfile=CONFIG['cert'], server_side=True)
-    httpd.serve_forever()
+            httpd.socket,
+            keyfile=CONFIG['key'],
+            certfile=CONFIG['cert'],
+            server_side=True)
+    try:
+        print('Server started at %s:%s' % server_address)
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print('KeyboardInterrupt, shutting down.')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--delay", type=int, help='random delay, milliseconds', default=0)
+    parser.add_argument(
+        "-s",
+        "--success",
+        type=int,
+        help='Desired chance of a successful response as a percentage',
+        default=100)
     parser.add_argument(
         "-r",
         "--responsecode",
@@ -78,13 +101,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
     global CONFIG
     CONFIG = {}
+    CONFIG['responsecode'] = args.responsecode
+    CONFIG['success'] = args.success
+    CONFIG['delay'] = args.delay
     CONFIG['key'] = args.keyfile
     CONFIG['cert'] = args.cert
     if args.cert is not None or args.keyfile is not None:
         try:
-            CONFIG['tls'] = os.path.exists(CONFIG['cert']) and os.path.exists(CONFIG['key'])
+            CONFIG['tls'] = os.path.exists(CONFIG['cert']) and os.path.exists(
+                CONFIG['key'])
             assert CONFIG['tls'] is not False
         except:
-            raise RuntimeError('You must supply files for a key AND a certificate, if either')
+            raise RuntimeError(
+                'You must supply files for a key AND a certificate, if either')
     CONFIG['code'] = args.responsecode
     sys.exit(main(args))
