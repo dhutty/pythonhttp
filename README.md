@@ -11,5 +11,6 @@ I need something like it again.
 
         docker build -t pythonhttp .
         docker run --rm -P pythonhttp -- --responsecode 204
+* See `--help` for optional behaviours, including delaying reponse and changing status codes.
 
 Note that I do not consider this to be production quality code or suitable for purposes in any way serious. This is for demonstration purposes only.
