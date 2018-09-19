@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 """Simple HTTP Server that concentrates on providing easy control over response codes."""
 
-import argparse, os, random, ssl, sys, time
-if sys.version_info >= (3,7):
-    from http.server import BaseHTTPRequestHandler
-else:
-    from BaseHTTPServer import BaseHTTPRequestHandler
+import argparse, json, os, random, ssl, sys, time
+from http.server import BaseHTTPRequestHandler
 
 HOST_NAME = 'localhost'
 PORT_NUMBER = 8080
@@ -38,9 +35,13 @@ class Server(BaseHTTPRequestHandler):
         else:
             if self.command == 'POST':
                 status = 202
-            content = bytes(
-                "Hello %s, I received:\n  %s" % (self.address_string(),
-                                                 self.requestline), "UTF-8")
+            if self.requestline.startswith('GET /healthcheck'):
+                content_type = 'application/json'
+                content = bytes(json.dumps("alive"), "UTF-8")
+            else:
+                content = bytes(
+                    "Hello %s, I received:\n  %s" % (self.address_string(),
+                                                     self.requestline), "UTF-8")
         self.send_response(status)
         self.send_header('Content-type', content_type)
         self.end_headers()
@@ -66,7 +67,7 @@ def main(args):
         from http.server import ThreadingHTTPServer
         httpd = ThreadingHTTPServer(server_address, Server)
     else:
-        from BaseHTTPServer import HTTPServer
+        from http.server import HTTPServer
         httpd = HTTPServer(server_address, Server)
 
     if CONFIG.get('tls') is not None:
