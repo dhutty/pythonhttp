@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 """Simple HTTP Server that concentrates on providing easy control over response codes."""
 
-from http.server import BaseHTTPRequestHandler
-
 import argparse, os, random, ssl, sys, time
+if sys.version_info >= (3,7):
+    from http.server import BaseHTTPRequestHandler
+else:
+    from BaseHTTPServer import BaseHTTPRequestHandler
 
 HOST_NAME = 'localhost'
 PORT_NUMBER = 8080
@@ -58,13 +60,13 @@ class Server(BaseHTTPRequestHandler):
 
 
 def main(args):
-    server_address = (HOST_NAME, PORT_NUMBER)
-    try:
+    server_address = (CONFIG.get('host'), CONFIG.get('port'))
+    if sys.version_info >= (3,7):
         # needs Python 3.7+
         from http.server import ThreadingHTTPServer
         httpd = ThreadingHTTPServer(server_address, Server)
-    except:
-        from http.server import HTTPServer
+    else:
+        from BaseHTTPServer import HTTPServer
         httpd = HTTPServer(server_address, Server)
 
     if CONFIG.get('tls') is not None:
@@ -78,10 +80,15 @@ def main(args):
         httpd.serve_forever()
     except KeyboardInterrupt:
         print('KeyboardInterrupt, shutting down.')
+        httpd.server_close()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--host", help='Interface', default=HOST_NAME)
+    parser.add_argument(
+        "--port", type=int, help='TCP port', default=PORT_NUMBER)
     parser.add_argument(
         "--delay", type=int, help='random delay, milliseconds', default=0)
     parser.add_argument(
@@ -106,6 +113,8 @@ if __name__ == '__main__':
     CONFIG['delay'] = args.delay
     CONFIG['key'] = args.keyfile
     CONFIG['cert'] = args.cert
+    CONFIG['host'] = args.host
+    CONFIG['port'] = args.port
     if args.cert is not None or args.keyfile is not None:
         try:
             CONFIG['tls'] = os.path.exists(CONFIG['cert']) and os.path.exists(
