@@ -1,0 +1,21 @@
+# Editors
+*~
+*#
+.#*
+\#*#
+*.sw[a-z]
+*.un~
+.idea
+
+# mkdocs products
+docs/site/
+
+# Mac OS X stuff
+.DS_Store
+
+# others
+*.log
+*.orig
+.cache
+.venv*
+venv*

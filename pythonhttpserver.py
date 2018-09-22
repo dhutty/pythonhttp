@@ -31,7 +31,7 @@ class Server(BaseHTTPRequestHandler):
     def handle_http(self, status=200, content_type='text/html'):
         if status != 200:
             content_type = 'text/plain'
-            content = bytes(STATUS_CONTENT[str(status)], "UTF-8")
+            content = bytes(STATUS_CONTENT.get(str(status), "NOT_IMPLEMENTED"), "UTF-8")
         else:
             if self.command == 'POST':
                 status = 202
@@ -60,7 +60,7 @@ class Server(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
 
-def main(args):
+def main():
     server_address = (CONFIG.get('host'), CONFIG.get('port'))
     if sys.version_info >= (3,7):
         # needs Python 3.7+
@@ -121,8 +121,8 @@ if __name__ == '__main__':
             CONFIG['tls'] = os.path.exists(CONFIG['cert']) and os.path.exists(
                 CONFIG['key'])
             assert CONFIG['tls'] is not False
-        except:
+        except Exception as e:
             raise RuntimeError(
                 'You must supply files for a key AND a certificate, if either')
     CONFIG['code'] = args.responsecode
-    sys.exit(main(args))
+    sys.exit(main())
