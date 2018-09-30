@@ -40,7 +40,8 @@ class Server(BaseHTTPRequestHandler):
                 content = bytes(json.dumps("alive"), "UTF-8")
             else:
                 content = bytes(
-                    "Hello %s, I received:\n  %s" % (self.address_string(),
+                    "Hello %s, at %s I received:\n\n  %s" % (self.address_string(),
+                                                     time.strftime("%c"),
                                                      self.requestline), "UTF-8")
         self.send_response(status)
         self.send_header('Content-type', content_type)
