@@ -49,15 +49,19 @@ class Server(BaseHTTPRequestHandler):
         return content
 
     def respond(self):
-        status = CONFIG['responsecode']
-        if CONFIG['success'] < 100:
-            if CONFIG['success'] < random.uniform(1, 100):
-                status = random.choice([400, 404, 418, 501])
-        content = self.handle_http(status=status)
-        if CONFIG['delay'] != 0:
-            delay = random.uniform(0, CONFIG['delay'])
-            print('Delaying %d ms' % delay)
-            time.sleep(delay * 0.001)
+        if not self.requestline.startswith('GET /healthcheck'):
+            status = CONFIG['responsecode']
+
+            if CONFIG['success'] < 100:
+                if CONFIG['success'] < random.uniform(1, 100):
+                    status = random.choice([400, 404, 418, 501])
+            content = self.handle_http(status=status)
+            if CONFIG['delay'] != 0:
+                delay = random.uniform(0, CONFIG['delay'])
+                print('Delaying %d ms' % delay)
+                time.sleep(delay * 0.001)
+        else:
+            content = self.handle_http(status=200)
         self.wfile.write(content)
 
 
