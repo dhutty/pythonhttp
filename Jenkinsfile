@@ -1,11 +1,11 @@
 pipeline {
-    options {}
+    //options {}
     agent any
     triggers {
         issueCommentTrigger('.*test.*please.*')
     }
-    parameters {}
-    environment {}
+    //parameters {}
+    //environment {}
     stages {
         stage('setup') {
             steps {
@@ -23,7 +23,7 @@ pipeline {
         }
         stage('build') {
             steps {
-                pullRequest.comment("Running Pipeline stage: build")
+                //pullRequest.comment("Running Pipeline stage: build")
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'gitlab-cred',
@@ -35,24 +35,23 @@ pipeline {
                         }
             }
 
-            post {
-                failure {
-                    //
-                }
-                success {
-                    //
-                }
-                aborted {
-                    //
-                }
-                always {
-                    cleanWs skipWhenFailed: true, notFailBuild: true, deleteDirs: true
-                }
-            }
+            /* post { */
+            /*     failure { */
+            /*     } */
+            /*     success { */
+            /*     } */
+            /*     aborted { */
+            /*     } */
+            /*     always { */
+            /*         cleanWs skipWhenFailed: true, notFailBuild: true, deleteDirs: true */
+            /*     } */
+            /* } */
+
         }
+
         stage('test') {
             steps {
-                pullRequest.comment("Running Pipeline stage: test")
+                //pullRequest.comment("Running Pipeline stage: test")
                 sh "pylint pythonhttpserver.py"
             }
         }
