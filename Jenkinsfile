@@ -12,13 +12,13 @@ pipeline {
               checkout([$class: 'GitSCM',
                   branches: [[name: env.GIT_COMMIT]],
                   userRemoteConfigs: [[
-                    credentialsId: "dhutty-github-token",
+                    credentialsId: 'dhutty-github-token',
                     url: env.GIT_URL
                   ]]
               ])
 
                 sh "virtualenv -p python3 venv"
-                sh "source venv/bin/activate; pip install -r requirements.txt"
+                sh "source venv/bin/activate; pip install -r test-requirements.txt"
             }
         }
         stage('build') {
@@ -26,12 +26,12 @@ pipeline {
                 //pullRequest.comment("Running Pipeline stage: build")
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'gitlab-cred',
+                        credentialsId: 'dhutty-github-token',
                         usernameVariable: 'GITLAB_USER',
                         passwordVariable: 'GITLAB_TOKEN'
                         ),
                         ]) {
-                            sh "docker build --no-cache ."
+                            sh "source venv/bin/activate; pylint pythonhttpserver.py"
                         }
             }
 
