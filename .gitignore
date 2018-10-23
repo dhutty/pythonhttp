@@ -19,3 +19,4 @@ docs/site/
 .cache
 .venv*
 venv*
+tf/.terraform/*

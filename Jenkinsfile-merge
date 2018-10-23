@@ -1,0 +1,75 @@
+pipeline {
+    //options {}
+    agent any
+
+    parameters {
+        string(defaultValue: 'http://pythonhttp.lisa18.hutty.uk', description: 'the URL which should be visited', name: 'TARGET_URL')
+    }
+
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+    }
+    stages {
+        stage('setup') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: env.GIT_COMMIT]],
+                    userRemoteConfigs: [[
+                      credentialsId: "dhutty-github-token",
+                      url: env.GIT_URL
+                    ]]
+                ])
+                dir("${WORKSPACE}/tf") {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dhutty-aws-creds',
+                            usernameVariable: 'AWS_ACCESS_KEY_ID',
+                            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                            ),
+                        ]) { sh "terraform init"
+                    }
+                }
+            }
+        }
+
+        stage('plan') {
+            steps {
+                dir("${WORKSPACE}/tf") {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dhutty-aws-creds',
+                            usernameVariable: 'AWS_ACCESS_KEY_ID',
+                            passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                            ),
+                        ]) { sh "terraform plan"
+                    }
+                }
+            }
+        }
+
+        stage('deploy') {
+            steps {
+              dir("${WORKSPACE}/tf") {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dhutty-aws-creds',
+                        usernameVariable: 'AWS_ACCESS_KEY_ID',
+                        passwordVariable: 'AWS_SECRET_ACCESS_KEY'
+                        ),
+                    ]) {
+                        sh "terraform apply -auto-approve"
+                }
+              }
+            }
+        }
+
+
+        stage('e2e_test') {
+            steps {
+                sh "virtualenv -p python3 venv; pip install httpie"
+                sh "source venv/bin/activate; http http://${TARGET_URL}"
+            }
+        }
+    }
+}
+// vi:syntax=groovy
