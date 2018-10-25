@@ -31,7 +31,8 @@ class Server(BaseHTTPRequestHandler):
     def handle_http(self, status=200, content_type='text/html'):
         if status != 200:
             content_type = 'text/plain'
-            content = bytes(STATUS_CONTENT.get(str(status), "NOT_IMPLEMENTED"), "UTF-8")
+            content = bytes(
+                STATUS_CONTENT.get(str(status), "NOT_IMPLEMENTED"), "UTF-8")
         else:
             if self.command == 'POST':
                 status = 202
@@ -40,9 +41,9 @@ class Server(BaseHTTPRequestHandler):
                 content = bytes(json.dumps("alive"), "UTF-8")
             else:
                 content = bytes(
-                    "Hello %s, at %s I received:\n\n  %s" % (self.address_string(),
-                                                     time.strftime("%c"),
-                                                     self.requestline), "UTF-8")
+                    "Hello %s, at %s I received:\n\n  %s" %
+                    (self.address_string(), time.strftime("%c"),
+                     self.requestline), "UTF-8")
         self.send_response(status)
         self.send_header('Content-type', content_type)
         self.end_headers()
@@ -67,10 +68,12 @@ class Server(BaseHTTPRequestHandler):
 
 def main():
     server_address = (CONFIG.get('host'), CONFIG.get('port'))
-    if sys.version_info >= (3,7):
+    if sys.version_info >= (3, 7):
         # needs Python 3.7+
+        # pylint: disable=no-name-in-module
         from http.server import ThreadingHTTPServer
         httpd = ThreadingHTTPServer(server_address, Server)
+        # pylint: enable=no-name-in-module
     else:
         from http.server import HTTPServer
         httpd = HTTPServer(server_address, Server)
@@ -91,8 +94,7 @@ def main():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--host", help='Interface', default=HOST_NAME)
+    parser.add_argument("--host", help='Interface', default=HOST_NAME)
     parser.add_argument(
         "--port", type=int, help='TCP port', default=PORT_NUMBER)
     parser.add_argument(
