@@ -42,18 +42,21 @@ pipeline {
                 }
             }
         }
-        stage('build') {
-            steps {
-                script {docker.build("${params.DOCKER_REGISTRY}/dhutty/pythonhttp")}
-            }
-        }
-        stage('publish') {
-            steps {
-                withDockerRegistry(credentialsId: 'dhutty-gitlab-username-password', url: "${params.DOCKER_REGISTRY}") {
-                    script {docker.image("${params.DOCKER_REGISTRY}/dhutty/pythonhttp").push()}
-                }
-            }
-        }
+
+        // alternative; for container-based pythonhttp
+        /* stage('build') { */
+        /*     steps { */
+        /*         script {docker.build("${params.DOCKER_REGISTRY}/dhutty/pythonhttp")} */
+        /*     } */
+        /* } */
+        /* stage('publish') { */
+        /*     steps { */
+        /*         withDockerRegistry(credentialsId: 'dhutty-gitlab-username-password', url: "${params.DOCKER_REGISTRY}") { */
+        /*             script {docker.image("${params.DOCKER_REGISTRY}/dhutty/pythonhttp").push()} */
+        /*         } */
+        /*     } */
+        /* } */
+
     }
 
     post {
