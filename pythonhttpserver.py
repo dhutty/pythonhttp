@@ -36,7 +36,7 @@ class Server(BaseHTTPRequestHandler):
         else:
             if self.command == 'POST':
                 status = 202
-            if self.requestline.startswith('GET /healthcheck'):
+            if self.requestline.startswith('GET /healthcheck') or self.requestline.startswith( 'GET /altcheck'):
                 content_type = 'application/json'
                 content = bytes(json.dumps("alive"), "UTF-8")
             else:
@@ -50,7 +50,7 @@ class Server(BaseHTTPRequestHandler):
         return content
 
     def respond(self):
-        if not self.requestline.startswith('GET /healthcheck'):
+        if not (self.requestline.startswith('GET /healthcheck') or self.requestline.startswith( 'GET /altcheck')):
             status = CONFIG['responsecode']
 
             if CONFIG['success'] < 100:
